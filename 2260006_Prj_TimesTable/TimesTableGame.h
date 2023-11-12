@@ -53,16 +53,18 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 		randseed(); //난수 초기화
 	}
 
+	/* 벡터를 사용하려고 하였으나 버그를 수정하지 못함
 	TimesTableGame(const std::string strName, int nDifficulty = 0, int nPlayTime = 0, double dbCorrectRatio = 0.0)
 	{
 		mName = strName;
 		mDifficulty = nDifficulty;
 		mPlayTime = nPlayTime;
 		mCorrectRatio = dbCorrectRatio;
-	}
+	}*/
 
 	//소멸자, 파괴자(destructor): 클래스명 앞에 ~(not 의미)를 붙인 멤버 함수
 	~TimesTableGame() {}
+
 
 	//setter
 	void setXpos(int nXPos);
@@ -87,25 +89,32 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 	void exeHardGame(int nTimes);
 	//void exeMenu(int nMenu);
 
-private: //private group(외부에서 접근 불가능)
+	//통계 저장 기능 메소드 (버그 수정 실패로 비활성화)
+	//void PrintStats(void);						//통계 출력 메소드
+	//void UpdateStats(TimesTableGame UserStats);	//통계 업데이트 메소드
+	//void SaveStats(std::string& filename);		//통계 저장 메소드
+	//void LoadStats(std::string& filename);		//통계 불러오기 메소드
+
+//private: //private group(외부에서 접근 불가능)
 
 	//private property(멤버 변수)
-
 	int nXPosition = 0;	//nXPosition : X좌표
 	int	nYPosition = 0;	//nYPosition : Y좌표
 	int m_nNumCalc = 0;
 	int m_nCorrectCalc = 0;
-	int mDifficulty = 0;					//점수
-	int	mPlayTime = 0;				//플레이 시간
 	double m_totalCalcTime = 0.0;
-	double mCorrectRatio = 0.0;		//정답 비율
 
-	std::string SavedStats = "SavedStats.txt"; //통계 파일 명칭
-	std::vector<TimesTableGame>Stats;	//통계 기능을 위한 벡터
 	std::string strStartLogo;
 	std::string strEndLogo;
 	std::string strTitle;
-	std::string mName;				//사용자 이름
+
+
+	//int mDifficulty = 0;			    //점수
+	//int mPlayTime = 0;				//플레이 시간
+	//double mCorrectRatio = 0.0;		//정답 비율
+	//std::string SavedStats = "SavedStats.txt";	//통계 파일 명칭
+	//std::vector<TimesTableGame>Stats;				//통계 기능을 위한 벡터
+	//std::string mName;							//사용자 이름
 
 	//private method(멤버 함수)
 
@@ -124,12 +133,6 @@ private: //private group(외부에서 접근 불가능)
 	void PrintDot(int nDot);					//로딩, 종료시 점을 출력하는 메소드
 	void StartLogoPrint(std::ifstream& file);	//Start 메시지 출력 메소드
 	void EndLogoPrint(std::ifstream& file);		//End 메시지 출력 메소드
-
-	//통계 저장 기능 메소드
-	void PrintStats(void);						//통계 출력 메소드
-	void UpdateStats(TimesTableGame UserStats);	//통계 업데이트 메소드
-	void SaveStats(std::string& filename);		//통계 저장 메소드
-	void LoadStats(std::string& filename);		//통계 불러오기 메소드
 };
 
 inline void TimesTableGame::setXpos(int nXPos)
@@ -236,28 +239,24 @@ inline void TimesTableGame::InputUserName(void)
 {
 	using namespace std;
 
-	TimesTableGame user;
+	string strUserName;
 
 	cout << "사용자 이름을 입력해주세요 : ";
-	cin >> user.mName;
-
+	cin >> strUserName;
 }
 
 inline void TimesTableGame::Menu(void)
 {
 	using namespace std;
+	TimesTableGame userStats;
 
-	TimesTableGame user;
 	ifstream StartLogoFile("StartLogo.txt");	
 	ifstream EndLogoFile("EndLogo.txt");		
 
 	StartLogoPrint(StartLogoFile); //시작 로고 출력
 	system("cls");
 
-	InputUserName(); //사용자 이름 입력
-	system("cls");
-
-	LoadStats(SavedStats); //통계 불러오기
+	InputUserName();
 
 	while (1)
 	{
@@ -304,13 +303,11 @@ inline void TimesTableGame::Menu(void)
 			system("cls");
 			GotoXY(nXPosition, nYPosition);
 			cout << "게임 통계";
-			PrintStats();
 			break;
 
 		case 4:
 			system("cls");
 			EndLogoPrint(EndLogoFile);
-			SaveStats(SavedStats);
 			exit(0);
 		}
 		Sleep(2000);
@@ -359,7 +356,6 @@ inline void TimesTableGame::startGame(int nTimes)
 	int nInput = 0;
 
 	nInput = SetGameLevel();
-	Stats.mDifficulty = nInput;
 
 	switch (nInput)
 	{
@@ -383,7 +379,6 @@ inline void TimesTableGame::startGame(int nTimes)
 inline void TimesTableGame::exeEasyGame(int nTimes)
 {
 	using namespace std;
-	TimesTableGame user;
 
 	for (int i = 0; i < DIFF_EASY; i++)
 	{
@@ -394,8 +389,6 @@ inline void TimesTableGame::exeEasyGame(int nTimes)
 			break; // 반복문 종료 키워드
 		}
 	}
-	UpdateStats(user);
-	SaveStats(SavedStats);
 }
 
 inline void TimesTableGame::exeNomalGame(int nTimes)
@@ -515,8 +508,6 @@ inline void TimesTableGame::updateScore(bool bCorrect, int nCorrectAns, double c
 	using namespace std;
 	using namespace mglib;
 
-	TimesTableGame Stats;
-
 	double correctRatio = 0.0,	//: 정답비율 
 		   avgCalcTime = 0.0;	//: 걸린시간
 
@@ -542,9 +533,6 @@ inline void TimesTableGame::updateScore(bool bCorrect, int nCorrectAns, double c
 
 	correctRatio = m_nCorrectCalc / double(m_nNumCalc) * 100.0;
 	avgCalcTime = m_totalCalcTime / double(m_nCorrectCalc);
-
-	Stats.mCorrectRatio = correctRatio;
-	Stats.mPlayTime = (int)avgCalcTime;
 
 	cout << "정답 비율: " << correctRatio << "%" << endl;
 	cout << "평균 계산 시간: " << avgCalcTime << "초" << endl << endl;
@@ -751,7 +739,7 @@ inline void TimesTableGame::EndLogoPrint(std::ifstream& file)
 	PrintDot(4);
 }
 
-inline void TimesTableGame::PrintStats(void)
+/*inline void TimesTableGame::PrintStats(void)
 {
 	using namespace std;
 
@@ -818,4 +806,4 @@ inline void TimesTableGame::LoadStats(std::string& filename)
 	{
 		cout << "파일을 열 수 없습니다." << endl;
 	}
-}
+}*/
