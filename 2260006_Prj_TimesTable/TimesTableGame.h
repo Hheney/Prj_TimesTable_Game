@@ -100,9 +100,9 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 private: //private group(외부에서 접근 불가능)
 
 	//private property(멤버 변수)
-	int nXPosition = 0;	//nXPosition : X좌표
-	int	nYPosition = 0;	//nYPosition : Y좌표
-	int nSelectDiff = 0; //난이도 선택
+	int nXPosition = 0;			//nXPosition : X좌표
+	int	nYPosition = 0;			//nYPosition : Y좌표
+	int nSelectDiff = 0;		//난이도 선택
 	int m_nNumCalc = 0;
 	int m_nCorrectCalc = 0;
 	double m_totalCalcTime = 0.0;
@@ -132,9 +132,9 @@ private: //private group(외부에서 접근 불가능)
 	void updateScore(bool bCorrect, int nCorrectAns, double calcTime);
 
 	//메뉴 기능 통합을 위한 메소드
-	void SaveStats(std::ofstream& file);
-	void LoadStats(std::ifstream& file);
-	void PrintStats(void);
+	void SaveStats(std::ofstream& file);		//통계 저장 메소드
+	void LoadStats(std::ifstream& file);		//통계 불러오기 메소드
+	void DisplayStats(void);					//통계 출력 메소드
 	void TitlePrint(std::ifstream& file);		//프로그램 제목 출력 메소드
 	void GotoXY(int nXPos, int nYPos);			//콘솔 커서 좌표변경 메소드
 	void InitXY(void);							//X, Y좌표 초기화 메소드
@@ -270,7 +270,7 @@ inline void TimesTableGame::Menu(void)
 	StartLogoPrint(StartLogoFile); //시작 로고 출력
 	system("cls");
 
-	InputUserName();
+	InputUserName(); //사용자 이름 입력
 	system("cls");
 
 	while (1)
@@ -314,7 +314,7 @@ inline void TimesTableGame::Menu(void)
 
 			GotoXY(nXPosition - 12, nYPosition + 2);
 			startGame(inputGameTimesNum());
-			SaveStats(SaveFile);
+			SaveStats(SaveFile); //게임 종료시 통계 저장
 			break;
 
 		case 3:
@@ -322,14 +322,14 @@ inline void TimesTableGame::Menu(void)
 			InitXY();
 			GotoXY(nXPosition, nYPosition - 5);
 			cout << "게임 통계" << endl;
-			LoadStats(OpenFile);
-			PrintStats();
+			LoadStats(OpenFile); //저장된 통계 불러오기
+			DisplayStats();		 //불러온 통계 출력
 			break;
 
 		case 4:
 			system("cls");
 			InitXY();
-			EndLogoPrint(EndLogoFile);
+			EndLogoPrint(EndLogoFile); //엔딩 로고 출력
 			exit(0);
 		}
 		system("cls");
@@ -364,7 +364,6 @@ inline void TimesTableGame::printAllTimesTable(int nTimesMax)
 	for (int i = 1; i <= nTimesMax; i++)
 	{
 		printTimesTable(i, __max(nTimesMax, DEF_TIMES_MAX));
-		//printf("\n");
 		cout << endl;
 	}
 }
@@ -373,20 +372,20 @@ inline void TimesTableGame::startGame(int nTimes)
 {
 	using namespace std;
 
-	nSelectDiff = SetGameLevel();
+	nSelectDiff = SetGameLevel(); //난이도 선택 메소드
 
 	switch (nSelectDiff)
 	{
 	case 1:
-		exeEasyGame(nTimes);
+		exeEasyGame(nTimes); //쉬움 난이도
 		break;
 
 	case 2:
-		exeNomalGame(nTimes);
-		break;
+		exeNomalGame(nTimes); //보통 난이도
+		break;	
 
 	case 3:
-		exeHardGame(nTimes);
+		exeHardGame(nTimes); //어려움 난이도
 		break;
 
 	default:
@@ -573,7 +572,7 @@ inline void TimesTableGame::LoadStats(std::ifstream& file)
 	file >> avgCalcTime;
 }
 
-inline void TimesTableGame::PrintStats(void)
+inline void TimesTableGame::DisplayStats(void)
 {
 	using namespace std;
 	using namespace mglib;
@@ -612,7 +611,7 @@ inline void TimesTableGame::TitlePrint(std::ifstream& file)
 
 inline void TimesTableGame::GotoXY(int nXPos, int nYPos)
 {
-	COORD Position;
+	COORD Position; //Short X,Y typedef임, X, Y좌표로 커서 위치를 옮기는 동작을 수행
 
 	Position.X = nXPos;
 	Position.Y = nYPos;
@@ -685,7 +684,7 @@ inline int TimesTableGame::SetGameLevel(void)
 	return nInput;
 }
 
-inline int TimesTableGame::InputKey(void)
+inline int TimesTableGame::InputKey(void) //방향키 없는 사용자를 위해 wasd키를 사용
 {
 	char chInput = _getch();
 
