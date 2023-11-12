@@ -570,6 +570,9 @@ inline int TimesTableGame::MoveORSelect(void)
 		case (int)WASDKeyOrSpace::SpaceBar:
 
 			return nYPosition - DEF_Y_COORD; //(변수) - (기본 y좌표)를 통해 switch문에 사용될 정수 반환 
+
+		default:
+			break;
 		}
 	}
 }
