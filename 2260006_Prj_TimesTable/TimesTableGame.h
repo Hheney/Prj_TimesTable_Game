@@ -65,7 +65,7 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 	void setXpos(int nXPos);
 	void setYpos(int nYpos);
 	
-	//메뉴 및 입력 메소드
+	//메소드 (비활성화 된 메소드는 "Menu" 통합 메소드로 기능이 흡수)
 	//void start(void);
 	//void printLogo(void);
 	//void printMenu(void);
@@ -74,15 +74,11 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 	int inputTimesNum(void);					//출력: 원하는 단수
 	int inputMaxTimesNum(void);					//출력: 출력할 최대 단수
 	int inputGameTimesNum(void);				//출력: 원하는 단수
-
-	//메뉴 및 입력 메소드 통합
-	void Menu(void); //타이틀 화면 및 메뉴 통합 메소드
-
-
-	//게임 기능 메소드
-	void printTimesTable(int i, int jMax);
-	void printAllTimesTable(int nTimesMax);
-	void startGame(int nTimes);
+	void InputUserName(void);					//사용자 이름을 입력받는 메소드
+	void Menu(void);							//타이틀 화면 및 메뉴 통합 메소드
+	void printTimesTable(int i, int jMax);		//원하는 단수 출력 메소드
+	void printAllTimesTable(int nTimesMax);		//모든 구구단 출력 메소드
+	void startGame(int nTimes);					//구구단 게임 메소드
 	//void exeMenu(int nMenu);
 
 private: //private group(외부에서 접근 불가능)
@@ -93,16 +89,16 @@ private: //private group(외부에서 접근 불가능)
 	int	nYPosition = 0;	//nYPosition : Y좌표
 	int m_nNumCalc = 0;
 	int m_nCorrectCalc = 0;
-	int mScore = 0;
-	int	mPlayTime = 0;
+	int mScore = 0;					//점수
+	int	mPlayTime = 0;				//플레이 시간
 	double m_totalCalcTime = 0.0;
-	double mCorrectRatio = 0.0;
+	double mCorrectRatio = 0.0;		//정답 비율
 
-	std::vector<TimesTableGame>Stats;
+	std::vector<TimesTableGame>Stats;	//통계 기능을 위한 벡터
 	std::string strStartLogo;
 	std::string strEndLogo;
 	std::string strTitle;
-	std::string mName;
+	std::string mName;				//사용자 이름
 
 	//private method(멤버 함수)
 
@@ -123,10 +119,10 @@ private: //private group(외부에서 접근 불가능)
 	void EndLogoPrint(std::ifstream& file);		//End 메시지 출력 메소드
 
 	//통계 저장 기능 메소드
-	void PrintStats(void);
-	void UpdateStats(TimesTableGame UserStats);
-	void SaveStats(std::string& filename);
-	void LoadStats(std::string& filename);
+	void PrintStats(void);						//통계 출력 메소드
+	void UpdateStats(TimesTableGame UserStats);	//통계 업데이트 메소드
+	void SaveStats(std::string& filename);		//통계 저장 메소드
+	void LoadStats(std::string& filename);		//통계 불러오기 메소드
 };
 
 inline void TimesTableGame::setXpos(int nXPos)
@@ -229,14 +225,28 @@ inline int TimesTableGame::inputGameTimesNum(void)
 	return inputInt("구구단을 연습할 단수를 입력하세요. 단수는? : ");
 }
 
+inline void TimesTableGame::InputUserName(void)
+{
+	using namespace std;
+
+	TimesTableGame user;
+
+	cout << "사용자 이름을 입력해주세요 : ";
+	cin >> user.mName;
+}
+
 inline void TimesTableGame::Menu(void)
 {
 	using namespace std;
 
+	string SavedStats = "SavedStats.txt";
 	ifstream StartLogoFile("StartLogo.txt");
 	ifstream EndLogoFile("EndLogo.txt");
 
 	StartLogoPrint(StartLogoFile); //시작 로고 출력
+	system("cls");
+
+	InputUserName();
 	system("cls");
 
 	while (1)
@@ -282,12 +292,15 @@ inline void TimesTableGame::Menu(void)
 
 		case 3:
 			system("cls");
+			GotoXY(nXPosition, nYPosition);
 			cout << "게임 통계";
+			PrintStats();
 			break;
 
 		case 4:
 			system("cls");
 			EndLogoPrint(EndLogoFile);
+			SaveStats(SavedStats);
 			exit(0);
 		}
 		Sleep(2000);
@@ -430,6 +443,8 @@ inline void TimesTableGame::updateScore(bool bCorrect, int nCorrectAns, double c
 	using namespace std;
 	using namespace mglib;
 
+	TimesTableGame Stats;
+
 	double correctRatio = 0.0,	//: 정답비율 
 		   avgCalcTime = 0.0;	//: 걸린시간
 
@@ -455,6 +470,10 @@ inline void TimesTableGame::updateScore(bool bCorrect, int nCorrectAns, double c
 
 	correctRatio = m_nCorrectCalc / double(m_nNumCalc) * 100.0;
 	avgCalcTime = m_totalCalcTime / double(m_nCorrectCalc);
+
+	Stats.mScore = m_nNumCalc;
+	Stats.mCorrectRatio = correctRatio;
+	Stats.mPlayTime = (int)avgCalcTime;
 
 	cout << "정답 비율: " << correctRatio << "%" << endl;
 	cout << "평균 계산 시간: " << avgCalcTime << "초" << endl << endl;
@@ -652,11 +671,9 @@ inline void TimesTableGame::PrintStats(void)
 {
 	using namespace std;
 
-	cout << "[통계]" << endl;
-
 	for (auto& user : Stats)
 	{
-		cout << user.mName << " : " << user.mScore << "점, " << user.mPlayTime << "초, " << user.mCorrectRatio * 100.0 << "%" << endl;
+		cout << "이름 : " << user.mName << " 점수 : " << user.mScore << " 플레이 시간 : " << user.mPlayTime << " 정답 비율 : " << user.mCorrectRatio * 100.0 << "%" << endl;
 	}
 }
 
