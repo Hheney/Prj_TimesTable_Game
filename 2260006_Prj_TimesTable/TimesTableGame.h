@@ -17,6 +17,9 @@
 #define DEF_X_COORD (46)			//디폴트 X좌표 값
 #define DEF_Y_COORD (13)			//디폴트 Y좌표 값
 #define LOADING_SCREEN_DELAY (10)	//시작화면 지연시간 msec단위
+#define DIFF_EASY (5)
+#define DIFF_NOMAL (10)
+#define DIFF_HARD (15)
 
 /*
 	- "enum" OpType
@@ -50,10 +53,10 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 		randseed(); //난수 초기화
 	}
 
-	TimesTableGame(const std::string strName, int nScore = 0, int nPlayTime = 0, double dbCorrectRatio = 0.0)
+	TimesTableGame(const std::string strName, int nDifficulty = 0, int nPlayTime = 0, double dbCorrectRatio = 0.0)
 	{
 		mName = strName;
-		mScore = nScore;
+		mDifficulty = nDifficulty;
 		mPlayTime = nPlayTime;
 		mCorrectRatio = dbCorrectRatio;
 	}
@@ -79,6 +82,9 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 	void printTimesTable(int i, int jMax);		//원하는 단수 출력 메소드
 	void printAllTimesTable(int nTimesMax);		//모든 구구단 출력 메소드
 	void startGame(int nTimes);					//구구단 게임 메소드
+	void exeEasyGame(int nTimes);
+	void exeNomalGame(int nTimes);
+	void exeHardGame(int nTimes);
 	//void exeMenu(int nMenu);
 
 private: //private group(외부에서 접근 불가능)
@@ -89,11 +95,12 @@ private: //private group(외부에서 접근 불가능)
 	int	nYPosition = 0;	//nYPosition : Y좌표
 	int m_nNumCalc = 0;
 	int m_nCorrectCalc = 0;
-	int mScore = 0;					//점수
+	int mDifficulty = 0;					//점수
 	int	mPlayTime = 0;				//플레이 시간
 	double m_totalCalcTime = 0.0;
 	double mCorrectRatio = 0.0;		//정답 비율
 
+	std::string SavedStats = "SavedStats.txt"; //통계 파일 명칭
 	std::vector<TimesTableGame>Stats;	//통계 기능을 위한 벡터
 	std::string strStartLogo;
 	std::string strEndLogo;
@@ -107,11 +114,11 @@ private: //private group(외부에서 접근 불가능)
 	void updateScore(bool bCorrect, int nCorrectAns, double calcTime);
 
 	//메뉴 기능 통합을 위한 메소드
-
 	void TitlePrint(std::ifstream& file);		//프로그램 제목 출력 메소드
 	void GotoXY(int nXPos, int nYPos);			//콘솔 커서 좌표변경 메소드
 	void InitXY(void);							//X, Y좌표 초기화 메소드
 	void MenuPrint(void);						//메뉴 출력 메소드
+	int SetGameLevel(void);						//난이도 설정 메소드
 	int InputKey(void);							//WASD키 입력 메소드
 	int MoveORSelect(void);						//메뉴 이동 및 선택 메소드
 	void PrintDot(int nDot);					//로딩, 종료시 점을 출력하는 메소드
@@ -233,21 +240,24 @@ inline void TimesTableGame::InputUserName(void)
 
 	cout << "사용자 이름을 입력해주세요 : ";
 	cin >> user.mName;
+
 }
 
 inline void TimesTableGame::Menu(void)
 {
 	using namespace std;
 
-	string SavedStats = "SavedStats.txt";
-	ifstream StartLogoFile("StartLogo.txt");
-	ifstream EndLogoFile("EndLogo.txt");
+	TimesTableGame user;
+	ifstream StartLogoFile("StartLogo.txt");	
+	ifstream EndLogoFile("EndLogo.txt");		
 
 	StartLogoPrint(StartLogoFile); //시작 로고 출력
 	system("cls");
 
-	InputUserName();
+	InputUserName(); //사용자 이름 입력
 	system("cls");
+
+	LoadStats(SavedStats); //통계 불러오기
 
 	while (1)
 	{
@@ -341,11 +351,73 @@ inline void TimesTableGame::printAllTimesTable(int nTimesMax)
 	}
 }
 
-inline void TimesTableGame::startGame(int nTimes) //이 메소드를 변형하여 "타임어택" 기능 추가가 가능할 것으로 보임
+inline void TimesTableGame::startGame(int nTimes)
 {
 	using namespace std;
 
-	while (1)
+	TimesTableGame Stats;
+	int nInput = 0;
+
+	nInput = SetGameLevel();
+	Stats.mDifficulty = nInput;
+
+	switch (nInput)
+	{
+	case 1:
+		exeEasyGame(nTimes);
+		break;
+
+	case 2:
+		exeNomalGame(nTimes);
+		break;
+
+	case 3:
+		exeHardGame(nTimes);
+		break;
+
+	default:
+		break;
+	}
+}
+
+inline void TimesTableGame::exeEasyGame(int nTimes)
+{
+	using namespace std;
+	TimesTableGame user;
+
+	for (int i = 0; i < DIFF_EASY; i++)
+	{
+		bool bResult = playTimesTable(nTimes);
+		if (!bResult)
+		{
+			cout << endl << "\t\t\t" << "게임을 종료합니다." << endl << endl;
+			break; // 반복문 종료 키워드
+		}
+	}
+	UpdateStats(user);
+	SaveStats(SavedStats);
+}
+
+inline void TimesTableGame::exeNomalGame(int nTimes)
+{
+	using namespace std;
+
+	for (int i = 0; i < DIFF_NOMAL; i++)
+	{
+		bool bResult = playTimesTable(nTimes);
+		if (!bResult)
+		{
+			cout << endl << "\t\t\t" << "게임을 종료합니다." << endl << endl;
+			break; // 반복문 종료 키워드
+		}
+	}
+}
+
+inline void TimesTableGame::exeHardGame(int nTimes)
+{
+	using namespace std;
+
+	for (int i = 0; i < DIFF_HARD; i++)
 	{
 		bool bResult = playTimesTable(nTimes);
 		if (!bResult)
@@ -471,7 +543,6 @@ inline void TimesTableGame::updateScore(bool bCorrect, int nCorrectAns, double c
 	correctRatio = m_nCorrectCalc / double(m_nNumCalc) * 100.0;
 	avgCalcTime = m_totalCalcTime / double(m_nCorrectCalc);
 
-	Stats.mScore = m_nNumCalc;
 	Stats.mCorrectRatio = correctRatio;
 	Stats.mPlayTime = (int)avgCalcTime;
 
@@ -543,6 +614,19 @@ inline void TimesTableGame::MenuPrint(void)
 
 	GotoXY(nXPosition - 16, nYPosition + 10);
 	cout << "[w] 위로 이동 [s] 아래로 이동 [spacebar] 메뉴 선택";
+}
+
+inline int TimesTableGame::SetGameLevel(void)
+{
+	int nInput = 0;
+
+	using namespace std;
+	cout << "난이도에 따라 제시되는 문항수가 변동됩니다" << endl;
+	cout << "[Easy] : 1, [Nomal] : 2, [Hard] : 3" << endl;
+	cout << "난이도를 선택하여 주세요 : ";
+	cin >> nInput;
+
+	return nInput;
 }
 
 inline int TimesTableGame::InputKey(void)
@@ -673,7 +757,7 @@ inline void TimesTableGame::PrintStats(void)
 
 	for (auto& user : Stats)
 	{
-		cout << "이름 : " << user.mName << " 점수 : " << user.mScore << " 플레이 시간 : " << user.mPlayTime << " 정답 비율 : " << user.mCorrectRatio * 100.0 << "%" << endl;
+		cout << "이름 : " << user.mName << " 점수 : " << user.mDifficulty << " 플레이 시간 : " << user.mPlayTime << " 정답 비율 : " << user.mCorrectRatio * 100.0 << "%" << endl;
 	}
 }
 
@@ -685,7 +769,7 @@ inline void TimesTableGame::UpdateStats(TimesTableGame UserStats)
 
 	sort(Stats.begin(), Stats.end(), [](TimesTableGame& Stats_1, TimesTableGame& Stats_2)
 		{
-			return Stats_1.mScore > Stats_2.mScore;
+			return Stats_1.mDifficulty > Stats_2.mDifficulty;
 		});
 
 	if (Stats.size() > 5) {
@@ -703,7 +787,7 @@ inline void TimesTableGame::SaveStats(std::string& filename)
 	{
 		for (auto& user : Stats)
 		{
-			SavedStats << user.mName << ' ' << user.mScore << ' ' << user.mPlayTime << ' ' << user.mCorrectRatio << endl;
+			SavedStats << user.mName << ' ' << user.mDifficulty << ' ' << user.mPlayTime << ' ' << user.mCorrectRatio << endl;
 		}
 		SavedStats.close();
 	}
@@ -724,7 +808,7 @@ inline void TimesTableGame::LoadStats(std::string& filename)
 	{
 		Stats.clear();
 
-		while (SavedStats >> user.mName >> user.mScore >> user.mPlayTime >> user.mCorrectRatio)
+		while (SavedStats >> user.mName >> user.mDifficulty >> user.mPlayTime >> user.mCorrectRatio)
 		{
 			Stats.push_back(user);
 		}
