@@ -16,7 +16,7 @@
 #define MAX_STREAM_SIZE	(10000)		//스트림 입출력을 할 때 처리하는 최대 문자 수
 #define DEF_X_COORD (46)			//디폴트 X좌표 값
 #define DEF_Y_COORD (13)			//디폴트 Y좌표 값
-#define LOADING_SCREEN_DELAY (10)	//시작화면 지연시간 msec단위
+#define LOADING_SCREEN_DELAY (500)	//시작화면 지연시간 msec단위
 #define DIFF_EASY (5)
 #define DIFF_NOMAL (10)
 #define DIFF_HARD (15)
@@ -804,6 +804,8 @@ inline void TimesTableGame::EndLogoPrint(std::ifstream& file)
 
 	cout << "Program off";
 	PrintDot(4);
+
+	GotoXY(nXPosition + 3, nYPosition + 8);
 }
 
 /*
