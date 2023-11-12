@@ -134,7 +134,7 @@ private: //private group(외부에서 접근 불가능)
 	//메뉴 기능 통합을 위한 메소드
 	void SaveStats(std::ofstream& file);
 	void LoadStats(std::ifstream& file);
-	void PrintStats(void) const;
+	void PrintStats(void);
 	void TitlePrint(std::ifstream& file);		//프로그램 제목 출력 메소드
 	void GotoXY(int nXPos, int nYPos);			//콘솔 커서 좌표변경 메소드
 	void InitXY(void);							//X, Y좌표 초기화 메소드
@@ -309,7 +309,7 @@ inline void TimesTableGame::Menu(void)
 		case 2:
 			system("cls");
 			InitXY();
-			GotoXY(nXPosition, nYPosition);
+			GotoXY(nXPosition + 2, nYPosition);
 			cout << "구구단 게임";
 
 			GotoXY(nXPosition - 12, nYPosition + 2);
@@ -320,7 +320,7 @@ inline void TimesTableGame::Menu(void)
 		case 3:
 			system("cls");
 			InitXY();
-			GotoXY(nXPosition, nYPosition);
+			GotoXY(nXPosition, nYPosition - 5);
 			cout << "게임 통계" << endl;
 			LoadStats(OpenFile);
 			PrintStats();
@@ -573,14 +573,22 @@ inline void TimesTableGame::LoadStats(std::ifstream& file)
 	file >> avgCalcTime;
 }
 
-inline void TimesTableGame::PrintStats(void) const
+inline void TimesTableGame::PrintStats(void)
 {
 	using namespace std;
+	using namespace mglib;
 
-	cout << "사용자 이름		:" << strUserName << endl;
-	cout << "플레이 난이도	:" << nSelectDiff << endl;
-	cout << "정답 비율		:" << correctRatio << endl;
-	cout << "풀이 속도		:" << avgCalcTime * 100.0 << '%' << endl;
+	settextcol(GREEN);
+
+	cout << endl << "\t\t\t\t\t사용자 이름\t:" << strUserName << endl;
+	cout << "\t\t\t\t\t플레이 난이도\t:" << nSelectDiff << "Lv." << endl;
+	cout << "\t\t\t\t\t정답 비율\t:" << correctRatio << '%' << endl;
+	cout << "\t\t\t\t\t평균 풀이 속도\t:" << avgCalcTime << " 초" << endl;
+
+	settextcol(RED);
+	GotoXY(nXPosition - 13, nYPosition + 7);
+
+	system("PAUSE");
 }
 
 inline void TimesTableGame::TitlePrint(std::ifstream& file)
@@ -653,11 +661,26 @@ inline int TimesTableGame::SetGameLevel(void)
 {
 	int nInput = 0;
 
+	using namespace mglib;
 	using namespace std;
+
+	system("cls");
+
+	settextcol(WHITE);
+	GotoXY(nXPosition - 10, nYPosition);
 	cout << "난이도에 따라 제시되는 문항수가 변동됩니다" << endl;
+
+	settextcol(GREEN);
+	GotoXY(nXPosition - 8, nYPosition + 2);
 	cout << "[Easy] : 1, [Nomal] : 2, [Hard] : 3" << endl;
+
+	settextcol(WHITE);
+	GotoXY(nXPosition - 2, nYPosition + 4);
 	cout << "난이도를 선택하여 주세요 : ";
 	cin >> nInput;
+
+	system("cls");
+	GotoXY(5, 4); //문제 풀이 좌표로 이동
 
 	return nInput;
 }
