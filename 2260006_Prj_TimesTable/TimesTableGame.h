@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>			//C++의 표준 라이브러리: C++의 표준 문자열(string)은 string; string은 namespace std에 정의됨
 #include <fstream>
+#include <vector>
+#include <algorithm>
 #include <time.h>
 #include <stdlib.h>
 #include <conio.h>
@@ -48,6 +50,14 @@ public: //public group(외부에서 접근 가능: C 언어의 구조체(struct)와 동일)
 		randseed(); //난수 초기화
 	}
 
+	TimesTableGame(const std::string strName, int nScore = 0, int nPlayTime = 0, double dbCorrectRatio = 0.0)
+	{
+		mName = strName;
+		mScore = nScore;
+		mPlayTime = nPlayTime;
+		mCorrectRatio = dbCorrectRatio;
+	}
+
 	//소멸자, 파괴자(destructor): 클래스명 앞에 ~(not 의미)를 붙인 멤버 함수
 	~TimesTableGame() {}
 
@@ -83,11 +93,16 @@ private: //private group(외부에서 접근 불가능)
 	int	nYPosition = 0;	//nYPosition : Y좌표
 	int m_nNumCalc = 0;
 	int m_nCorrectCalc = 0;
-	double m_totalCalcTime = 0.;
+	int mScore = 0;
+	int	mPlayTime = 0;
+	double m_totalCalcTime = 0.0;
+	double mCorrectRatio = 0.0;
 
+	std::vector<TimesTableGame>Stats;
 	std::string strStartLogo;
 	std::string strEndLogo;
 	std::string strTitle;
+	std::string mName;
 
 	//private method(멤버 함수)
 
@@ -106,6 +121,12 @@ private: //private group(외부에서 접근 불가능)
 	void PrintDot(int nDot);					//로딩, 종료시 점을 출력하는 메소드
 	void StartLogoPrint(std::ifstream& file);	//Start 메시지 출력 메소드
 	void EndLogoPrint(std::ifstream& file);		//End 메시지 출력 메소드
+
+	//통계 저장 기능 메소드
+	void PrintStats(void);
+	void UpdateStats(TimesTableGame UserStats);
+	void SaveStats(std::string& filename);
+	void LoadStats(std::string& filename);
 };
 
 inline void TimesTableGame::setXpos(int nXPos)
@@ -625,4 +646,75 @@ inline void TimesTableGame::EndLogoPrint(std::ifstream& file)
 
 	cout << "Program off";
 	PrintDot(4);
+}
+
+inline void TimesTableGame::PrintStats(void)
+{
+	using namespace std;
+
+	cout << "[통계]" << endl;
+
+	for (auto& user : Stats)
+	{
+		cout << user.mName << " : " << user.mScore << "점, " << user.mPlayTime << "초, " << user.mCorrectRatio * 100.0 << "%" << endl;
+	}
+}
+
+inline void TimesTableGame::UpdateStats(TimesTableGame UserStats)
+{
+	using namespace std;
+
+	Stats.push_back(UserStats);
+
+	sort(Stats.begin(), Stats.end(), [](TimesTableGame& Stats_1, TimesTableGame& Stats_2)
+		{
+			return Stats_1.mScore > Stats_2.mScore;
+		});
+
+	if (Stats.size() > 5) {
+		Stats.pop_back();
+	}
+}
+
+inline void TimesTableGame::SaveStats(std::string& filename)
+{
+	using namespace std;
+
+	ofstream SavedStats(filename);
+
+	if (SavedStats.is_open())
+	{
+		for (auto& user : Stats)
+		{
+			SavedStats << user.mName << ' ' << user.mScore << ' ' << user.mPlayTime << ' ' << user.mCorrectRatio << endl;
+		}
+		SavedStats.close();
+	}
+	else
+	{
+		cout << "파일을 열 수 없습니다." << endl;
+	}
+}
+
+inline void TimesTableGame::LoadStats(std::string& filename)
+{
+	using namespace std;
+
+	ifstream SavedStats(filename);
+	TimesTableGame user;
+
+	if (SavedStats.is_open())
+	{
+		Stats.clear();
+
+		while (SavedStats >> user.mName >> user.mScore >> user.mPlayTime >> user.mCorrectRatio)
+		{
+			Stats.push_back(user);
+		}
+		SavedStats.close();
+	}
+	else
+	{
+		cout << "파일을 열 수 없습니다." << endl;
+	}
 }
