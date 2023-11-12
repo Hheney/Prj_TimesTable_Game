@@ -307,7 +307,7 @@ inline void TimesTableGame::printAllTimesTable(int nTimesMax)
 	}
 }
 
-inline void TimesTableGame::startGame(int nTimes)
+inline void TimesTableGame::startGame(int nTimes) //이 메소드를 변형하여 "타임어택" 기능 추가가 가능할 것으로 보임
 {
 	using namespace std;
 
