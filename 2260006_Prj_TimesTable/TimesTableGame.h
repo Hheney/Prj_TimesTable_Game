@@ -446,6 +446,11 @@ inline void TimesTableGame::TitlePrint(std::ifstream& file)
 
 	cout << "\n\n\n\n\n";
 
+	/*
+		getline 함수는 입력 스트림에서 문자들을 읽어서, 인자로 받은 문자열에 저장
+		입력 스트림에서 문자를 읽다가 delim 문자를 읽게되면, 해당 문자를 버리고, 읽어들이기를 종료 
+		만약에 delim 문자를 설정하지 않았다면, 디폴트로 개행 문자('\n')로 설정됨.
+	*/
 	while (getline(file, strTitle))
 	{
 		settextcol(YELLOW);
